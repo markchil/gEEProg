@@ -1,4 +1,5 @@
-#!arch -i386 /opt/local/bin/python
+#!/opt/local/bin/python
+#arch -i386 /opt/local/bin/python
 # must be run 32 bit on OS X for wxPython to play nice.
 
 # Copyright 2013 Mark Chilenski
@@ -24,7 +25,7 @@ import wx
 
 import serial
 import serial.tools.list_ports
-import prog2801
+import gEEProg
 import string
 #import os
 import os.path
@@ -44,7 +45,7 @@ BORDER_OFFSET = 10              # number of pixels to offset the text_entry heig
 
 class EntryValidator(wx.PyValidator):
     """Extension of PyValidator to scrub input into uppercase hexadecimal,
-    also enforces the 2 * prog2801.NUM_BYTES length limit."""
+    also enforces the 2 * gEEProg.NUM_BYTES length limit."""
     def __init__(self):
         wx.PyValidator.__init__(self)
         self.Bind(wx.EVT_CHAR, self.OnChar)
@@ -68,7 +69,7 @@ class EntryValidator(wx.PyValidator):
     def OnChar(self, event):
         """Handle character events. Only allow valid hexadecimal/binary digits,
         (depending on state of self.in_hex_mode), automatically capitalize
-        lowercase a-f and limit length to prog2801.NUM_BYTES of data."""
+        lowercase a-f and limit length to gEEProg.NUM_BYTES of data."""
         keycode = int(event.GetKeyCode())
         # handle extended ASCII, let other special keys go through
         # also let backspace and delete go through:
@@ -79,12 +80,12 @@ class EntryValidator(wx.PyValidator):
             if self.GetWindow().in_hex_mode:
                 valid_digit = key in string.hexdigits
                 invalid_length = len(self.GetWindow().GetValue()) + 1 \
-                                    > 2 * prog2801.NUM_BYTES \
+                                    > 2 * gEEProg.NUM_BYTES \
                                     and selection[0] == selection[1]
             else:
                 valid_digit = key in ('0', '1')
                 invalid_length = len(self.GetWindow().GetValue()) + 1 \
-                                    > 8 * prog2801.NUM_BYTES \
+                                    > 8 * gEEProg.NUM_BYTES \
                                     and selection[0] == selection[1]
             
             if invalid_length or not valid_digit:
@@ -126,10 +127,10 @@ class HexBox(wx.TextCtrl):
     """Extension of wx.TextCtrl to handle input of hexadecimal/binary data of
     fixed length. Keeps track of whether it is in hex or binary edit mode with
     the flag self.in_hex_mode. Sets allowable lengths based on
-    prog2801.NUM_BYTES."""
+    gEEProg.NUM_BYTES."""
     def __init__(self, in_hex_mode, *args, **kwargs):
         """Sets font to monospaced and sets size to that appropriate for the
-        content, as inferred from prog2801.NUM_BYTES."""
+        content, as inferred from gEEProg.NUM_BYTES."""
         wx.TextCtrl.__init__(self, *args, **kwargs)
         self.in_hex_mode = in_hex_mode
         # set monospaced font for proper editing
@@ -144,10 +145,10 @@ class HexBox(wx.TextCtrl):
         # get line dimensions:
         hex_line_dims = self.GetTextExtent('DDDD')
         self.hex_size = (BORDER_OFFSET + hex_line_dims[0],
-                         BORDER_OFFSET + (prog2801.NUM_BYTES // 2) * hex_line_dims[1])
+                         BORDER_OFFSET + (gEEProg.NUM_BYTES // 2) * hex_line_dims[1])
         bin_line_dims = self.GetTextExtent('0000000000000000')
         self.bin_size = (BORDER_OFFSET + bin_line_dims[0],
-                         BORDER_OFFSET + (prog2801.NUM_BYTES // 2) * bin_line_dims[1])
+                         BORDER_OFFSET + (gEEProg.NUM_BYTES // 2) * bin_line_dims[1])
         if self.in_hex_mode:
             self.SetSize(self.hex_size)
         else:
@@ -224,7 +225,7 @@ class HexBox(wx.TextCtrl):
     
     def pad_with_fill(self, string=None, required_length=None, char=FILL_CHAR):
         """Pad the data with a relevant fill character. If no required length
-        is given, fills up to prog2801.NUM_BYTES, otherwise the length of
+        is given, fills up to gEEProg.NUM_BYTES, otherwise the length of
         string to fill to is passed as required_length. The character to fill
         with is given as char, which defaults to FILL_CHAR='0'."""
         update_self = False
@@ -233,9 +234,9 @@ class HexBox(wx.TextCtrl):
             string = self.GetValue()
         if required_length is None:
             if self.in_hex_mode:
-                required_length = 2 * prog2801.NUM_BYTES
+                required_length = 2 * gEEProg.NUM_BYTES
             else:
-                required_length = 8 * prog2801.NUM_BYTES
+                required_length = 8 * gEEProg.NUM_BYTES
         entry_len = len(string)
         if entry_len < required_length:
             string = string + char * (required_length - entry_len)
@@ -566,7 +567,7 @@ class MasterFrame(wx.Frame):
         If the new port fails to acknowledge automation mode, raises an error
         dialog."""
         try:
-            prog2801.exit_automation_mode(self.port)
+            gEEProg.exit_automation_mode(self.port)
             self.port.close()
         except:
             pass
@@ -577,7 +578,7 @@ class MasterFrame(wx.Frame):
         else:
             try:
                 self.port = serial.Serial(port, timeout=SERIAL_TIMEOUT)
-                prog2801.enter_automation_mode(self.port)
+                gEEProg.enter_automation_mode(self.port)
                 self.update_status("Successfully connected to port '{port}'".format(port=port),
                                    'OK', 'GREEN')
             except:
@@ -617,10 +618,10 @@ class MasterFrame(wx.Frame):
                     text = do.GetText()
                     selection = self.text_entry.GetSelection()
                     if self.text_entry.in_hex_mode:
-                        max_len = 2 * prog2801.NUM_BYTES
+                        max_len = 2 * gEEProg.NUM_BYTES
                         valid_chars = string.hexdigits
                     else:
-                        max_len = 8 * prog2801.NUM_BYTES
+                        max_len = 8 * gEEProg.NUM_BYTES
                         valid_chars = ('0', '1')
                     safe_text = ''
                     for char in text:
@@ -688,9 +689,9 @@ class MasterFrame(wx.Frame):
         others are read as raw binary. For text, first 64 valid hex digits are
         read. For binary, first 32 bytes are read."""
         if self.text_entry.in_hex_mode:
-            max_length = 2 * prog2801.NUM_BYTES
+            max_length = 2 * gEEProg.NUM_BYTES
         else:
-            max_length = 8 * prog2801.NUM_BYTES
+            max_length = 8 * gEEProg.NUM_BYTES
         try:
             file_name, file_extension = os.path.splitext(file_path)
             
@@ -711,7 +712,7 @@ class MasterFrame(wx.Frame):
             else:
                 # treat as binary file:
                 input_file = open(file_path, 'rb')
-                data = input_file.read(prog2801.NUM_BYTES)
+                data = input_file.read(gEEProg.NUM_BYTES)
                 if self.text_entry.in_hex_mode:
                     for b in data:
                         read_chr = read_chr + b.encode('hex').upper()
@@ -833,7 +834,7 @@ class MasterFrame(wx.Frame):
         instructed to exit automation mode and is then closed."""
         if self.port is not None:
             try:
-                prog2801.exit_automation_mode(self.port)
+                gEEProg.exit_automation_mode(self.port)
                 time.sleep(0.2)
                 self.port.close()
             except:
@@ -844,7 +845,7 @@ class MasterFrame(wx.Frame):
         """Handles presses of the read button. Clears the entry screen, then
         gets the contents of the chip."""
         try:
-            new_text = prog2801.read_chip(self.port)
+            new_text = gEEProg.read_chip(self.port)
             
             if self.text_entry.in_hex_mode:
                 self.text_entry.SetValue(new_text)
@@ -877,7 +878,7 @@ class MasterFrame(wx.Frame):
         else:
             value = self.text_entry.bin_rep_to_hex_rep(self.text_entry.GetValue())
         try:
-            success = prog2801.program_chip(self.port, value)
+            success = gEEProg.program_chip(self.port, value)
             if not success:
                 wx.Bell()
                 self.update_status('Verification following program failed', 'FAIL', 'RED')
@@ -914,7 +915,7 @@ class MasterFrame(wx.Frame):
         else:
             value = self.text_entry.bin_rep_to_hex_rep(self.text_entry.GetValue())
         try:
-            success = prog2801.verify_chip(self.port, value)
+            success = gEEProg.verify_chip(self.port, value)
             if success:
                 self.update_status('Chip passed verification.', 'OK', 'GREEN')
             else:
@@ -924,7 +925,7 @@ class MasterFrame(wx.Frame):
                                        'Chip fails: contents do not match what ' \
                                        'is on your screen.\n' \
                                        'Actual contents of chip are:\n' \
-                                       + prog2801.read_chip(self.port) + \
+                                       + gEEProg.read_chip(self.port) + \
                                        '\nScreen has:\n' \
                                        + value,
                                        '2801Prog: Verification Failure',
@@ -949,8 +950,8 @@ class MasterFrame(wx.Frame):
         that it was erased by checking chip value. If chip is not all zeros,
         raises error dialog. Does NOT change what is entered on the screen."""
         try:
-            result = prog2801.erase_chip(self.port)
-            if result != '0' * 2 * prog2801.NUM_BYTES:
+            result = gEEProg.erase_chip(self.port)
+            if result != '0' * 2 * gEEProg.NUM_BYTES:
                 wx.Bell()
                 self.update_status('Chip did not erase properly.', 'FAIL', 'RED')
                 dlg = wx.MessageDialog(self,
