@@ -1,8 +1,6 @@
 #!/opt/local/bin/python
-#arch -i386 /opt/local/bin/python
-# must be run 32 bit on OS X for wxPython to play nice.
 
-# Copyright 2013 Mark Chilenski
+# Copyright 2014 Mark Chilenski
 # This program is distributed under the terms of the GNU General Purpose License (GPL).
 # Refer to http://www.gnu.org/licenses/gpl.txt
 
@@ -41,7 +39,7 @@ NULL_PORT_NAME = 'disconnected' # port name for when there is no connection
 SERIAL_TIMEOUT = 2              # seconds
 FILL_CHAR = '0'                 # character to fill in on incomplete entries
 TIME_FMT = '%H:%M:%S: '         # timestamp format (for time.strftime)
-BORDER_OFFSET = 20              # number of pixels to offset the text_entry height, 10 is proven for RedHat
+BORDER_OFFSET = 20              # number of pixels to offset the TextCtrl height
 
 class EntryValidator(wx.PyValidator):
     """Extension of PyValidator to scrub input into uppercase hexadecimal,
@@ -52,24 +50,29 @@ class EntryValidator(wx.PyValidator):
     
     def Clone(self):
         """Required dummy method."""
+        print("call Clone")
         return EntryValidator()
     
     def Validate(self, win):
         """Required dummy method."""
+        print("call Validate")
         return True
     
     def TransferToWindow(self):
         """Required dummy method."""
+        print("call TransferToWindow")
         return True
     
     def TransferFromWindow(self):
         """Required dummy method."""
+        print("call TransferFromWindow")
         return True
     
     def OnChar(self, event):
         """Handle character events. Only allow valid hexadecimal/binary digits,
         (depending on state of self.in_hex_mode), automatically capitalize
         lowercase a-f and limit length to gEEProg.NUM_BYTES of data."""
+        print("call OnChar")
         keycode = int(event.GetKeyCode())
         # handle extended ASCII, let other special keys go through
         # also let backspace and delete go through:
@@ -116,7 +119,7 @@ class MyFileDropTarget(wx.FileDropTarget):
             self.frame.status_bar.SetBackgroundColour('RED')
             dlg = wx.MessageDialog(self.frame,
                                    'Only drop one file to read at a time!',
-                                   '2801Prog: File Error',
+                                   '%s: File Error' % PROG_NAME,
                                    style=wx.OK|wx.ICON_ERROR)
             dlg.ShowModal()
             dlg.Destroy()
@@ -132,22 +135,24 @@ class HexBox(wx.TextCtrl):
         """Sets font to monospaced and sets size to that appropriate for the
         content, as inferred from gEEProg.NUM_BYTES."""
         wx.TextCtrl.__init__(self, *args, **kwargs)
+        self.SetValidator(EntryValidator())
+        # Try the pre-canned IntValidator for debug:
+        # wx 3.0 seems to have broken validation...great, just great.
+        # from wx.lib.intctrl import IntValidator
+        # self.SetValidator(IntValidator())
         self.in_hex_mode = in_hex_mode
         # set monospaced font for proper editing
-        # Courier should be a safe assumption for almost all systems.
         self.mono_font = wx.Font(18,
                                  family=wx.FONTFAMILY_TELETYPE,
                                  style=wx.FONTSTYLE_NORMAL,
                                  weight=wx.FONTWEIGHT_NORMAL)
-        # used to use: faceName='Courier'
-        # changed to more platform-independent call
         self.SetFont(self.mono_font)
         # get line dimensions:
-        hex_line_dims = self.GetTextExtent('DDDD')
+        hex_line_dims = self.GetTextExtent('0000')
         self.hex_size = (BORDER_OFFSET + hex_line_dims[0] + wx.SystemSettings_GetMetric(wx.SYS_VSCROLL_X),
                          BORDER_OFFSET + (gEEProg.NUM_BYTES // 2) * hex_line_dims[1])
         bin_line_dims = self.GetTextExtent('0000000000000000')
-        self.bin_size = (BORDER_OFFSET + bin_line_dims[0],
+        self.bin_size = (BORDER_OFFSET + bin_line_dims[0] + wx.SystemSettings_GetMetric(wx.SYS_VSCROLL_X),
                          BORDER_OFFSET + (gEEProg.NUM_BYTES // 2) * bin_line_dims[1])
         if self.in_hex_mode:
             self.SetSize(self.hex_size)
@@ -286,8 +291,7 @@ class MasterFrame(wx.Frame):
         # entry box:
         self.text_entry = HexBox(True,
                                  self,
-                                 style=wx.TE_MULTILINE|wx.TE_CHARWRAP,
-                                 validator=EntryValidator())
+                                 style=wx.TE_MULTILINE|wx.TE_CHARWRAP)
         self.text_entry.SetHelpText('Type or paste your code here, ' \
                                     'or use File > Open to load from a binary ' \
                                     'or text file.')
@@ -373,7 +377,7 @@ class MasterFrame(wx.Frame):
         self.file_menu = wx.Menu()
         
         self.file_menu.Append(wx.ID_ABOUT,
-                              "&About 2801Prog",
+                              "&About %s" % PROG_NAME,
                               'Information about this program.',
                               wx.ITEM_NORMAL)
         self.Bind(wx.EVT_MENU, self.on_about, id=wx.ID_ABOUT)
@@ -592,7 +596,7 @@ class MasterFrame(wx.Frame):
                 dlg = wx.MessageDialog(self,
                                        'Could not connect to that port. ' \
                                        'Please try another.',
-                                       '2801Prog: Serial Connection Error',
+                                       '%s: Serial Connection Error' % PROG_NAME,
                                        style=wx.OK|wx.ICON_ERROR)
                 dlg.ShowModal()
                 dlg.Destroy()
@@ -666,7 +670,7 @@ class MasterFrame(wx.Frame):
         info.Name = PROG_NAME
         info.Version = VERSION_STR
         info.Copyright = '(C) 2013 Mark Chilenski'
-        info.Description = 'GUI to control the 2801Prog EEPROM programmer.'
+        info.Description = 'GUI to control %s EEPROM programmers.' % PROG_NAME
         info.WebSite = ('http://www.6540rom.com', 'www.6540rom.com')
         info.Developers = ['Mark Chilenski', "Matthew D'Asaro"]
         # bypass shitty license handling on Win and Mac:
@@ -863,7 +867,7 @@ class MasterFrame(wx.Frame):
                                        'Could not perform read operation. ' \
                                        'Please ensure that the device is powered ' \
                                        'and that you have selected the correct serial port.',
-                                       '2801Prog: Read Error',
+                                       '%s: Read Error' % PROG_NAME,
                                        style=wx.OK|wx.ICON_ERROR)
                 dlg.ShowModal()
                 dlg.Destroy()
@@ -886,7 +890,7 @@ class MasterFrame(wx.Frame):
                                        'Verification of program operation failed. ' \
                                        'This may indicate your chip is bad. ' \
                                        'Please check connections and try again.',
-                                       '2801Prog: Program Verification Failure',
+                                       '%s: Program Verification Failure' % PROG_NAME,
                                        style=wx.OK|wx.ICON_ERROR)
                 dlg.ShowModal()
                 dlg.Destroy()
@@ -900,7 +904,7 @@ class MasterFrame(wx.Frame):
                                        'Could not perform program operation. ' \
                                        'Please ensure that the device is powered ' \
                                        'and that you have selected the correct serial port.',
-                                       '2801Prog: Program Error',
+                                       '%s: Program Error' % PROG_NAME,
                                        style=wx.OK|wx.ICON_ERROR)
                 dlg.ShowModal()
                 dlg.Destroy()
@@ -928,7 +932,7 @@ class MasterFrame(wx.Frame):
                                        + gEEProg.read_chip(self.port) + \
                                        '\nScreen has:\n' \
                                        + value,
-                                       '2801Prog: Verification Failure',
+                                       '%s: Verification Failure' % PROG_NAME,
                                        style=wx.OK|wx.ICON_ERROR)
                 dlg.ShowModal()
                 dlg.Destroy()
@@ -940,7 +944,7 @@ class MasterFrame(wx.Frame):
                                        'Could not perform verify operation. ' \
                                        'Please ensure that the device is powered ' \
                                        'and that you have selected the correct serial port.',
-                                       '2801Prog: Verification Error',
+                                       '%s: Verification Error' % PROG_NAME,
                                        style=wx.OK|wx.ICON_ERROR)
                 dlg.ShowModal()
                 dlg.Destroy()
@@ -959,7 +963,7 @@ class MasterFrame(wx.Frame):
                                        'Chip still reads:\n' \
                                        + result + \
                                        '\nThis may indicate your chip is bad.',
-                                       '2801Prog: Erase Not Successful',
+                                       '%s: Erase Not Successful' % PROG_NAME,
                                        style=wx.OK|wx.ICON_ERROR)
                 dlg.ShowModal()
                 dlg.Destroy()
@@ -973,7 +977,7 @@ class MasterFrame(wx.Frame):
                                        'Could not perform erase operation. ' \
                                        'Please ensure that the device is powered ' \
                                        'and that you have selected the correct serial port.',
-                                       '2801Prog: Erase Error',
+                                       '%s: Erase Error' % PROG_NAME,
                                        style=wx.OK|wx.ICON_ERROR)
                 dlg.ShowModal()
                 dlg.Destroy()
@@ -989,6 +993,7 @@ if __name__ == '__main__':
 
     # wait until very last minute to fill -- this is a hack to get the scrollbar
     # to go away under Redhat.
+    # TODO: Since we are living with the 
     frame.text_entry.pad_with_fill()
     # try to fix status bar bug on Ubuntu:
     #frame.SendSizeEvent()
