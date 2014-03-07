@@ -34,14 +34,14 @@ import math
 
 LICENSE_TEXT = 'Distributed under the terms of the GNU General Purpose License (GPL). Refer to http://www.gnu.org/licenses/gpl.txt'
 
-PROG_NAME = '2801Prog'          # program name
-VERSION_STR = '1.0'     # version as a string
+PROG_NAME = 'gEEProg'          # program name
+VERSION_STR = '2.0'     # version as a string
 
 NULL_PORT_NAME = 'disconnected' # port name for when there is no connection
 SERIAL_TIMEOUT = 2              # seconds
 FILL_CHAR = '0'                 # character to fill in on incomplete entries
 TIME_FMT = '%H:%M:%S: '         # timestamp format (for time.strftime)
-BORDER_OFFSET = 10              # number of pixels to offset the text_entry height, 10 is proven for RedHat
+BORDER_OFFSET = 20              # number of pixels to offset the text_entry height, 10 is proven for RedHat
 
 class EntryValidator(wx.PyValidator):
     """Extension of PyValidator to scrub input into uppercase hexadecimal,
@@ -144,7 +144,7 @@ class HexBox(wx.TextCtrl):
         self.SetFont(self.mono_font)
         # get line dimensions:
         hex_line_dims = self.GetTextExtent('DDDD')
-        self.hex_size = (BORDER_OFFSET + hex_line_dims[0],
+        self.hex_size = (BORDER_OFFSET + hex_line_dims[0] + wx.SystemSettings_GetMetric(wx.SYS_VSCROLL_X),
                          BORDER_OFFSET + (gEEProg.NUM_BYTES // 2) * hex_line_dims[1])
         bin_line_dims = self.GetTextExtent('0000000000000000')
         self.bin_size = (BORDER_OFFSET + bin_line_dims[0],
@@ -272,7 +272,7 @@ class MasterFrame(wx.Frame):
         # _MEIPASS variable to point to where the files get unpacked
         # if the variable is empty (i.e., when developing), just use
         # ./icon_file to get from local directory
-        icon_file = 'favicon.ico'
+        icon_file = '../graphics/favicon.ico'
         if wx.Platform == '__WXMSW__':
             import sys
             if getattr(sys, 'frozen', None):
@@ -286,7 +286,7 @@ class MasterFrame(wx.Frame):
         # entry box:
         self.text_entry = HexBox(True,
                                  self,
-                                 style=wx.TE_MULTILINE|wx.TE_CHARWRAP|wx.TE_NO_VSCROLL,
+                                 style=wx.TE_MULTILINE|wx.TE_CHARWRAP,
                                  validator=EntryValidator())
         self.text_entry.SetHelpText('Type or paste your code here, ' \
                                     'or use File > Open to load from a binary ' \
