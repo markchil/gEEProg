@@ -409,9 +409,9 @@ class GEEProgMainWindow(tk.Tk):
         
         self.wm_title("gEEProg %s" % (__version__,))
         
-        # img = tk.PhotoImage(file='../graphics/Icon.ico')
-        # self.tk.call('wm', 'iconbitmap', self._w, img)
-        self.iconbitmap('../graphics/Icon.ico')
+        img = tk.PhotoImage(file='../graphics/Icon.png')
+        self.tk.call('wm', 'iconphoto', self._w, img)
+        # self.wm_iconbitmap('../graphics/Icon.xpm')
         # top = tk.Toplevel()
         # tk.Label(top, image=img).pack()
         # top.overrideredirect(1)
