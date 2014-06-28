@@ -516,7 +516,7 @@ class GEEProgMainWindow(tk.Tk):
     def show_help(self):
         top = tk.Toplevel()
         top.title("About gEEProg %s" % (__version__,))
-        # top.tk.call('wm', 'iconphoto', top._w, self.img)
+        top.tk.call('wm', 'iconphoto', top._w, self.img)
         icon = tk.Label(top, image=self.img)
         icon.grid(row=0, column=0, sticky='NSEW', rowspan=7)
         
