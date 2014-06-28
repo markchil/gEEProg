@@ -184,8 +184,11 @@ class HexCanvas(tk.Canvas):
         # TODO: Clean this up
         # 0x0004 is control
         # 0x0008 is left-hand alt (aka, command key on Mac)
+        # BUT, state 0x0008 is num lock on Windows...
         # 0x0080 is right-hand alt
-        if not (event.state & 0x0004) and not (event.state & 0x0008) and not (event.state & 0x0080):
+        if (not (event.state & 0x0004) and
+                (sys.platform != 'darwin' or not (event.state & 0x0008)) and
+                not (event.state & 0x0080)):
             if event.char in string.hexdigits:
                 self.itemconfig(self.data_text[self.cursor_idx], text=event.char.upper())
                 self.master.data[self.cursor_idx] = event.char.upper()
