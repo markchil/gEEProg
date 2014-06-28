@@ -446,7 +446,7 @@ class GEEProgMainWindow(tk.Tk):
         )
         
         # Create control buttons:
-        self.control_box = ControlBox(self)
+        self.control_box = ControlBox(self, pady=2)
         self.control_box.grid(row=1, column=1, sticky='SW')
         
         # Create textbox:
@@ -458,7 +458,8 @@ class GEEProgMainWindow(tk.Tk):
             font=tkFont.nametofont("TkDefaultFont"),
             background=self.cget("bg"),
             borderwidth=0,
-            relief=tk.FLAT
+            relief=tk.FLAT,
+            padx=2
         )
         self.set_info("")
         self.info_box.grid(row=1, column=2, sticky='NSEW')
