@@ -12,6 +12,7 @@ import gEEProg
 import os.path
 import sys
 import warnings
+import webbrowser
 
 __version__ = '0.0'
 
@@ -409,13 +410,9 @@ class GEEProgMainWindow(tk.Tk):
         
         self.wm_title("gEEProg %s" % (__version__,))
         
-        img = tk.PhotoImage(file='../graphics/Icon.gif')
-        self.tk.call('wm', 'iconphoto', self._w, img)
-        # self.wm_iconbitmap('../graphics/Icon.xpm')
-        # top = tk.Toplevel()
-        # tk.Label(top, image=img).pack()
-        # top.overrideredirect(1)
-        # self.iconwindow(top)
+        # TODO: Do something about the path here!
+        self.img = tk.PhotoImage(file='../graphics/Icon.gif')
+        self.tk.call('wm', 'iconphoto', self._w, self.img)
         
         self.data = [FILL_CHAR] * (MAX_ROWS * MAX_COLS)
         
@@ -502,6 +499,65 @@ class GEEProgMainWindow(tk.Tk):
             accelerator='%s-C' % (COMMAND_KEY,)
         )
         self.bind_all("<%s-c>" % (COMMAND_KEY,), self.copy_buffer)
+        
+        self.menu_edit = tk.Menu(self.menubar)
+        self.menubar.add_cascade(menu=self.menu_edit, label='Help')
+        self.menu_edit.add_command(
+            label="gEEProg help...",
+            command=self.show_help
+        )
+    
+    def show_help(self):
+        top = tk.Toplevel()
+        top.title("About gEEProg %s" % (__version__,))
+        # top.tk.call('wm', 'iconphoto', top._w, self.img)
+        icon = tk.Label(top, image=self.img)
+        icon.grid(row=0, column=0, sticky='NSEW', rowspan=7)
+        
+        title = tk.Label(
+            top,
+            text="gEEProg %s" % (__version__,),
+            font=tkFont.Font(weight=tkFont.BOLD)
+        )
+        title.grid(row=0, column=1, sticky='NW')
+        
+        description = tk.Label(
+            top,
+            text=u"\u00A9 2014 Mark Chilenski\n"
+                  "GUI to control D'Asaro Designs EEPROM programmers.",
+            justify=tk.LEFT
+        )
+        description.grid(row=1, column=1, sticky='W')
+        
+        DD_link = tk.Label(top, text="www.dasarodesigns.com", foreground="#0000ff")
+        DD_link.bind(
+            "<1>",
+            lambda event: webbrowser.open("http://www.dasarodesigns.com")
+        )
+        DD_link.grid(row=2, column=1, sticky='W')
+        
+        git_link = tk.Label(top, text="www.github.com/markchil/gEEProg", foreground="#0000ff")
+        git_link.bind(
+            "<1>",
+            lambda event: webbrowser.open("http://www.github.com/markchil/gEEProg")
+        )
+        git_link.grid(row=3, column=1, sticky='W')
+        
+        license_text = tk.Label(
+            top,
+            text="Distributed under the terms of the GNU General Purpose License (GPL)."
+        )
+        license_text.grid(row=4, column=1, sticky='W')
+        
+        gpl_link = tk.Label(top, text="www.gnu.org/licenses/gpl.txt", foreground="#0000ff")
+        gpl_link.bind(
+            "<1>",
+            lambda event: webbrowser.open("http://www.gnu.org/licenses/gpl.txt")
+        )
+        gpl_link.grid(row=5, column=1, sticky='W')
+        
+        button = tk.Button(top, text="OK", command=top.destroy)
+        button.grid(row=6, column=1, sticky='E')
     
     def set_info(self, text):
         self.info_box.config(state=tk.NORMAL)
