@@ -58,6 +58,8 @@ class HexCanvas(tk.Canvas):
     All arguments and keyword arguments are passed to tk.Canvas.
     """
     def __init__(self, *args, **kwargs):
+        if 'background' not in kwargs and 'bg' not in kwargs:
+            kwargs['background'] = 'white'
         tk.Canvas.__init__(self, *args, **kwargs)
         
         self.ncol = MAX_COLS
