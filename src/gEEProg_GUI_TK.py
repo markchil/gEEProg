@@ -409,7 +409,7 @@ class GEEProgMainWindow(tk.Tk):
         
         self.wm_title("gEEProg %s" % (__version__,))
         
-        img = tk.PhotoImage(file='../graphics/Icon.png')
+        img = tk.PhotoImage(file='../graphics/Icon.xbm')
         # self.tk.call('wm', 'iconbitmap', self._w, img)
         # self.iconbitmap('../graphics/icon.xbm')
         top = tk.Toplevel()
