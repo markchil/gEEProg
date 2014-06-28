@@ -20,12 +20,33 @@ import time
 SERIAL_TRUE = chr(49)  # ASCII "1"
 SERIAL_FALSE = chr(48)  # ASCII "0"
 SERIAL_ESC = chr(27)  # ASCII "ESC"
-NUM_BYTES = 32  # number of bytes stored on the 2801.
 VERB_TERMINATOR = '\r'  # terminator used after verbs sent TO the unit
+
+# This dictionary maps between the line the programmer returns upon entering
+# automation mode and the name of the programmer:
+AUTOMATION_MODE_LINES = {
+    'Automation Mode (ESC to exit)\r\n': '2801Prog',
+    '2801Prog Automation Mode (ESC to exit)\r\n': '2801Prog',
+    '2006Prog Automation Mode (ESC to exit)\r\n': '2006Prog'
+}
+
+# This dictionary maps the name of the programmer to the number of bytes:
+NUM_BYTES = {
+    '2801Prog': 32,
+    '2006Prog': 64,
+}
+NUM_BYTES[None] = max(NUM_BYTES.values())
+
+# This dictionary is the character that each nibble is set to when the chip is
+# "erased":
+ERASE_CHAR = {
+    '2801Prog': '0',
+    '2006Prog': '0'
+}
 
 # These are the supporting classes and functions:
 class InvalidResponseError(Exception):
-    """Exception class for invalid responses from the 2801Prog unit."""
+    """Exception class for invalid responses from the programmer unit."""
     def __init__(self, value):
         self.value = value
     
@@ -76,14 +97,14 @@ def erase_chip_send(port):
     erase the chip, a bad chip could still not be zeroed."""
     return check_boolean(ask(port, 'e'), verb='erase')
 
-def fetch_buffer(port):
+def fetch_buffer(port, num_bytes):
     """Command to fetch the contents of the hardware buffer. Gets fetched as a
     string representation of the hexadecimal, terminated with \\r\\n. Returns
     the string representation with terminator stripped."""
     port.write('d' + VERB_TERMINATOR)
-    value = port.read(size=NUM_BYTES * 2 + 2)  # account for termination
+    value = port.read(size=num_bytes * 2 + 2)  # account for termination
     value = value[0:-2]
-    if len(value) != NUM_BYTES * 2:
+    if len(value) != num_bytes * 2:
         raise InvalidResponseError('value read from hardware buffer is of incorrect length. Value read is: ' + value)
     return value
 
@@ -123,18 +144,20 @@ def enter_automation_mode(port):
     
     # check usage prompt -- if it doesn't print this, it didn't go into
     # automation mode properly, or the buffer is out of sync.
-    if line != 'Automation Mode (ESC to exit)\r\n':
+    if line not in AUTOMATION_MODE_LINES:
         raise InvalidResponseError('Never got automation handshake from unit!')
+    else:
+        return AUTOMATION_MODE_LINES[line]
 
 def exit_automation_mode(port):
     """Command to exit automation mode by sending ESC."""
     port.write(SERIAL_ESC)
 
-def read_chip(port):
+def read_chip(port, num_bytes):
     """Command to read what is in the chip. Behind the scenes it reads the
     chip into the hardware buffer, then fetches and returns the hardware buffer."""
     read_chip_into_buffer(port)
-    return fetch_buffer(port)
+    return fetch_buffer(port, num_bytes)
 
 def verify_chip(port, inpt):
     """Command to verify what is in the chip against the given input. Behind
@@ -155,10 +178,10 @@ def program_chip(port, inpt):
     program_chip_from_buffer(port)
     return verify_chip_against_buffer(port)
 
-def erase_chip(port):
+def erase_chip(port, num_bytes):
     """Erases the chip. Returns what is read from the chip (in case the erase
     failed and this is in fact non-zero)."""
     erase_success = erase_chip_send(port)
     if not erase_success:
         raise InvalidResponseError("Command 'e' returned false.")
-    return read_chip(port)
+    return read_chip(port, num_bytes)
