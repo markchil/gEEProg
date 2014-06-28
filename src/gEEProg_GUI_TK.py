@@ -456,7 +456,9 @@ class GEEProgMainWindow(tk.Tk):
             height=1,
             wrap=tk.WORD,
             font=tkFont.nametofont("TkDefaultFont"),
-            background=self.cget("bg")
+            background=self.cget("bg"),
+            borderwidth=0,
+            relief=tk.FLAT
         )
         self.set_info("")
         self.info_box.grid(row=1, column=2, sticky='NSEW')
