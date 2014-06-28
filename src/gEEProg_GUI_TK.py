@@ -409,13 +409,13 @@ class GEEProgMainWindow(tk.Tk):
         
         self.wm_title("gEEProg %s" % (__version__,))
         
-        img = tk.PhotoImage(file='../graphics/Icon.ico')
+        # img = tk.PhotoImage(file='../graphics/Icon.ico')
         # self.tk.call('wm', 'iconbitmap', self._w, img)
-        # self.iconbitmap('../graphics/icon.xbm')
-        top = tk.Toplevel()
-        tk.Label(top, image=img).pack()
+        self.iconbitmap('../graphics/icon.ico')
+        # top = tk.Toplevel()
+        # tk.Label(top, image=img).pack()
         # top.overrideredirect(1)
-        self.iconwindow(top)
+        # self.iconwindow(top)
         
         self.data = [FILL_CHAR] * (MAX_ROWS * MAX_COLS)
         
