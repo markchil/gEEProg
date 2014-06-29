@@ -11,15 +11,16 @@ Usage:
 
 from setuptools import setup
 
-APP = ['prog2801GuiWX.py']
+APP = ['../../src/gEEProg_GUI_TK.py']
 DATA_FILES = []
 # need to specifcy i386 to get proper 32-bit version,
 # need to include license text and favicon
-OPTIONS = {'arch': 'i386',
+OPTIONS = {
  'argv_emulation': True,
- 'iconfile': 'Icon.icns',
- 'resources': 'favicon.ico,gpl-3.0.txt',
- 'plist': 'Info.plist'}
+ 'iconfile': '../../graphics/Icon.icns',
+ 'resources': '../../graphics/Icon.png',
+ 'plist': 'Info.plist'
+}
 
 setup(
     app=APP,

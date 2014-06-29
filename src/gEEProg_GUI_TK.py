@@ -1,4 +1,22 @@
 #!/usr/bin/env python
+
+# Copyright 2014 Mark Chilenski
+# This program is distributed under the terms of the GNU General Purpose License (GPL).
+# Refer to http://www.gnu.org/licenses/gpl.txt
+
+#     This program is free software: you can redistribute it and/or modify
+#     it under the terms of the GNU General Public License as published by
+#     the Free Software Foundation, either version 3 of the License, or
+#     (at your option) any later version.
+# 
+#     This program is distributed in the hope that it will be useful,
+#     but WITHOUT ANY WARRANTY; without even the implied warranty of
+#     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#     GNU General Public License for more details.
+# 
+#     You should have received a copy of the GNU General Public License
+#     along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 from __future__ import division
 
 import Tkinter as tk
@@ -14,7 +32,7 @@ import sys
 import warnings
 import webbrowser
 
-__version__ = '0.0'
+__version__ = '1.0'
 
 NULL_PORT_NAME = "disconnected"
 SERIAL_TIMEOUT = 2
@@ -416,7 +434,12 @@ class GEEProgMainWindow(tk.Tk):
         self.wm_title("gEEProg %s" % (__version__,))
         
         # TODO: Do something about the path here!
-        self.img = tk.PhotoImage(file='../graphics/Icon.gif')
+        if getattr(sys, 'frozen', None) == 'macosx_app':
+            print(os.getcwd())
+            img_path = 'Icon.gif'
+        else:
+            img_path = '../graphics/Icon.gif'
+        self.img = tk.PhotoImage(file=img_path)
         self.tk.call('wm', 'iconphoto', self._w, self.img)
         
         self.data = [FILL_CHAR] * (MAX_ROWS * MAX_COLS)
@@ -516,7 +539,7 @@ class GEEProgMainWindow(tk.Tk):
             command=self.show_help
         )
     
-    def show_help(self):
+    def show_help(self, event=None):
         top = tk.Toplevel()
         top.title("About gEEProg %s" % (__version__,))
         top.tk.call('wm', 'iconphoto', top._w, self.img)
@@ -709,4 +732,5 @@ class GEEProgMainWindow(tk.Tk):
 
 if __name__ == "__main__":
     root = GEEProgMainWindow()
+    root.lift()
     root.mainloop()

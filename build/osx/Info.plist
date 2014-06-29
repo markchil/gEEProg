@@ -3,25 +3,25 @@
 <plist version="1.0">
 <dict>
 	<key>CFBundleName</key>
-	<string>2801Prog</string>
+	<string>gEEProg</string>
 	<key>CFBundleIdentifier</key>
-	<string>com.6540rom.2801Prog</string>
+	<string>com.dasarodesigns.gEEProg</string>
 	<key>CFBundleIconFile</key>
-	<string>Icon</string>
+	<string>Icon.icns</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleExecutable</key>
-	<string>2801Prog</string>
+	<string>gEEProg</string>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleDisplayName</key>
-	<string>2801Prog</string>
+	<string>gEEProg</string>
 	<key>CFBundleVersion</key>
 	<string>0</string>
 	<key>CFBundleShortVersionString</key>
 	<string>1.0</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>© Mark Chilenski 2013</string>
+	<string>© Mark Chilenski 2014</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en_US</string>
 </dict>
