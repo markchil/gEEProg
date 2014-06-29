@@ -437,7 +437,7 @@ class GEEProgMainWindow(tk.Tk):
             img_path = 'Icon.gif'
         elif getattr(sys, 'frozen', None):
             print(sys.frozen)
-            img_path = sys._MEIPASS + 'Icon.ico'
+            img_path = os.path.join(sys._MEIPASS, 'graphics/Icon.gif')
         else:
             img_path = '../graphics/Icon.gif'
         self.img = tk.PhotoImage(file=img_path)
