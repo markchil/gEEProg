@@ -433,10 +433,11 @@ class GEEProgMainWindow(tk.Tk):
         
         self.wm_title("gEEProg %s" % (__version__,))
         
-        # TODO: Do something about the path here!
         if getattr(sys, 'frozen', None) == 'macosx_app':
-            print(os.getcwd())
             img_path = 'Icon.gif'
+        elif getattr(sys, 'frozen', None):
+            print(sys.frozen)
+            img_path = sys._MEIPASS + 'Icon.ico'
         else:
             img_path = '../graphics/Icon.gif'
         self.img = tk.PhotoImage(file=img_path)
