@@ -16,9 +16,9 @@ DATA_FILES = []
 # need to specifcy i386 to get proper 32-bit version,
 # need to include license text and favicon
 OPTIONS = {
- 'argv_emulation': True,
+ 'argv_emulation': False,  # Changed to make py2app work...
  'iconfile': '../../graphics/Icon.icns',
- 'resources': '../../graphics/Icon.png',
+ 'resources': '../../graphics/Icon.gif',
  'plist': 'Info.plist'
 }
 
@@ -30,3 +30,8 @@ setup(
 )
 
 # run as "python setup_app.py py2app"
+
+# Attempt 1:
+#arch -i386 python2.7 setup_app.py py2app
+# Attempt 2:
+#arch -i386 python setup_app.py py2app
