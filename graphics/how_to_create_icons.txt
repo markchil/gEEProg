@@ -1,0 +1,25 @@
+How to make icon files:
+
+For Mac OS X:
+-- Create a folder called "icon.iconset"
+-- Add the following files:
+    icon_16x16.png
+    icon_16x16@2x.png
+    icon_32x32.png
+    icon_32x32@2x.png
+    icon_128x128.png
+    icon_128x128@2x.png
+    icon_256x256.png
+    icon_256x256@2x.png
+    icon_512x512.png
+    icon_512x512@2x.png
+-- The "@2x" files are for resolution-doubling: so, for instance, "16x16@2x" should be 32x32.
+-- Run the following command from the shell:
+iconutil -c icns icon.iconset
+
+
+For Windows:
+-- Create the file icon_64x64.png
+-- cd into the folder created above.
+-- Run the following command from the shell:
+convert icon_16x16.png icon_32x32.png ../icon_64x64.png icon_128x128.png ../icon_new.ico
