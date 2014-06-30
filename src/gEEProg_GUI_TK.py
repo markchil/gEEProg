@@ -206,10 +206,21 @@ class HexCanvas(tk.Canvas):
         # 0x0008 is left-hand alt (aka, command key on Mac)
         # BUT, state 0x0008 is num lock on Windows...
         # 0x0080 is right-hand alt
-        if (not (event.state & 0x0004) and
+        
+        # Fix for Linux: For whatever reason, the numpad arrow keys are not captured properly, so we have to bind them here:
+        if event.char == '':
+            if event.keysym == 'KP_Up':
+                return self.cursor_up(event)
+            elif event.keysym == 'KP_Down':
+                return self.cursor_down(event)
+            elif event.keysym == 'KP_Left':
+                return self.cursor_left(event)
+            elif event.keysym == 'KP_Right':
+                return self.cursor_right(event)
+        elif (not (event.state & 0x0004) and
                 (sys.platform != 'darwin' or not (event.state & 0x0008)) and
                 not (event.state & 0x0080)):
-            if event.char in string.hexdigits:
+            if event.char != '' and event.char in string.hexdigits:
                 self.itemconfig(self.data_text[self.cursor_idx], text=event.char.upper())
                 self.master.data[self.cursor_idx] = event.char.upper()
                 if self.cursor_idx < self.nrow * self.ncol - 1:
@@ -493,8 +504,11 @@ class GEEProgMainWindow(tk.Tk):
         self.bind("<Right>", self.hex_canvas.cursor_right)
         self.bind("<Up>", self.hex_canvas.cursor_up)
         self.bind("<Down>", self.hex_canvas.cursor_down)
-        for c in string.hexdigits:
-            self.bind(c, self.hex_canvas.insert)
+        
+        #for c in string.hexdigits:
+        #    self.bind(c, self.hex_canvas.insert)
+        # Bind all keys to insert to work around bug with numpad in Linux:
+        self.bind("<Key>", self.hex_canvas.insert)
         
         self.grid_columnconfigure(2, weight=1)
         self.grid_rowconfigure(1, weight=1)
