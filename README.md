@@ -3,17 +3,39 @@ gEEProg
 
 Python module and GUI for controlling the 2801Prog, 2006Prog and other EEPROM programmers.
 
+Homepage: http://www.dasarodesigns.com/
+
+Source home: https://github.com/markchil/gEEProg
+
 Primary test configuration:
-Mac OS X 10.6.8
-Python 2.7.3
-PySerial 2.6
-wxPython 2.8.12.1
+
+- Mac OS X 10.9.5
+- Python 2.7.9
+- PySerial 2.7
+- Tkinter 2.7.9
 
 Tested with comparable installations on Windows XP, Windows 7, Red Hat and
 Ubuntu.
 
-To run from source:
-Once Python, PySerial and wxPython have been installed in sensible places,
-call:
-python prog2801GuiWX.py
-from the source directory.
+To install/run from source:
+
+1) Ensure you have Python 2.7 installed: https://www.python.org/downloads/
+
+2) Ensure you have Tkinter installed for Python 2.7: http://tkinter.unpythonic.net/wiki/How_to_install_Tkinter or http://www.tkdocs.com/tutorial/install.html
+
+3) Ensure you have pip installed for Python 2.7: https://pip.pypa.io/en/latest/installing.html
+
+4) Execute the command::
+    
+    pip install gEEProg
+
+(You may need to use sudo with this, or you can use `pip install --user gEEProg` to install the software only in your user directory.)
+
+5) You can now access the gEEProg package's raw commands with `import gEEProg`.
+
+6) The GUI is a pure Python script called gEEProgGUI. This should be installed to the bin directory under Python's path prefix. You can find this prefix out by running the following two commands in Python::
+    
+    import sys
+    print(sys.prefix)
+
+Assuming the PREFIX/bin directory is on your PATH, you can now launch the GUI simply by typing `gEEProgGUI` from the shell. If Python 2.7 is not the version of Python that is called when you type `python` at the shell, then you should modify the shebang statement at the beginning of the gEEProgGUI script to ensure it gets run with the correct version of Python.

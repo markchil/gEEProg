@@ -1,5 +1,5 @@
 # -*- mode: python -*-
-a = Analysis(['..\\..\\src\\gEEProg_GUI_TK.py'],
+a = Analysis(['..\\..\\src\\gEEProgGUI'],
              pathex=['C:\\Documents and Settings\\Administrator\\My Documents\\gEEProg\src'],
              hiddenimports=[],
              hookspath=None)

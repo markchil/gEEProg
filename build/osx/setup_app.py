@@ -11,7 +11,7 @@ Usage:
 
 from setuptools import setup
 
-APP = ['../../src/gEEProg_GUI_TK.py']
+APP = ['../../src/gEEProgGUI']
 DATA_FILES = []
 # need to specifcy i386 to get proper 32-bit version,
 # need to include license text and favicon

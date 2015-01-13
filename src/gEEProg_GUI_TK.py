@@ -451,7 +451,12 @@ class GEEProgMainWindow(tk.Tk):
             img_path = os.path.join(sys._MEIPASS, 'graphics/Icon.gif')
         else:
             img_path = '../graphics/Icon.gif'
-        self.img = tk.PhotoImage(file=img_path)
+        # If Icon.gif isn't in the usual spots for git/frozen app, it must be
+        # where pip puts it:
+        try:
+            self.img = tk.PhotoImage(file=img_path)
+        except tk.TclError:
+            self.img = tk.PhotoImage(file=os.path.join(os.path.dirname(__file__), '..', 'data', 'gEEProg', 'Icon.gif'))
         self.tk.call('wm', 'iconphoto', self._w, self.img)
         
         self.data = [FILL_CHAR] * (MAX_ROWS * MAX_COLS)
