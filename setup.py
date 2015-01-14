@@ -10,7 +10,7 @@ setup(
     version='2.0',
     package_dir={'': 'src'},
     py_modules=['gEEProg'],
-    install_requires=['pyserial'],
+    install_requires=['pyserial>=2.7'],
     author='Mark Chilenski',
     author_email='mark.chilenski@gmail.com',
     url='http://www.dasarodesigns.com/',
