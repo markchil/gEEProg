@@ -32,7 +32,7 @@ import sys
 import warnings
 import webbrowser
 
-__version__ = '1.0'
+__version__ = '2.0'
 
 NULL_PORT_NAME = "disconnected"
 SERIAL_TIMEOUT = 2

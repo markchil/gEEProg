@@ -7,7 +7,7 @@ except ImportError:
 
 setup(
     name='gEEProg',
-    version='1.0',
+    version='2.0',
     package_dir={'': 'src'},
     py_modules=['gEEProg'],
     install_requires=['pyserial'],
