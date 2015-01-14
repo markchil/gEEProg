@@ -28,8 +28,8 @@ To install/run from source:
 4) Execute the command::
     
     pip install gEEProg
-
-(You may need to use sudo with this, or you can use `pip install --user gEEProg` to install the software only in your user directory.)
+    
+   (You may need to use sudo with this, or you can use `pip install --user gEEProg` to install the software only in your user directory.)
 
 5) You can now access the gEEProg package's raw commands with `import gEEProg`.
 
@@ -38,4 +38,4 @@ To install/run from source:
     import sys
     print(sys.prefix)
 
-Assuming the PREFIX/bin directory is on your PATH, you can now launch the GUI simply by typing `gEEProgGUI` from the shell. If Python 2.7 is not the version of Python that is called when you type `python` at the shell, then you should modify the shebang statement at the beginning of the gEEProgGUI script to ensure it gets run with the correct version of Python.
+   Assuming the PREFIX/bin directory is on your PATH, you can now launch the GUI simply by typing `gEEProgGUI` from the shell. If Python 2.7 is not the version of Python that is called when you type `python` at the shell, then you should modify the shebang statement at the beginning of the gEEProgGUI script to ensure it gets run with the correct version of Python.
