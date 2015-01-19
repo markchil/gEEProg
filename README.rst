@@ -8,6 +8,8 @@ Homepage: http://www.dasarodesigns.com/
 
 Source home: https://github.com/markchil/gEEProg
 
+Releases (including packaged binaries): https://github.com/markchil/gEEProg/releases
+
 Primary test configuration:
 
 - Mac OS X 10.9.5
