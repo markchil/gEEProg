@@ -1,4 +1,4 @@
-# Copyright 2014 Mark Chilenski
+# Copyright 2016 Mark Chilenski
 # This program is distributed under the terms of the GNU General Purpose License (GPL).
 # Refer to http://www.gnu.org/licenses/gpl.txt
 
@@ -27,21 +27,31 @@ VERB_TERMINATOR = '\r'  # terminator used after verbs sent TO the unit
 AUTOMATION_MODE_LINES = {
     'Automation Mode (ESC to exit)\r\n': '2801Prog',
     '2801Prog Automation Mode (ESC to exit)\r\n': '2801Prog',
-    '2006Prog Automation Mode (ESC to exit)\r\n': '2006Prog'
+    '2006Prog Automation Mode (ESC to exit)\r\n': '2006Prog',
+    '1400Prog Automation Mode (ESC to exit)\r\n': '1400Prog'
 }
 
 # This dictionary maps the name of the programmer to the number of bytes:
 NUM_BYTES = {
     '2801Prog': 32,
     '2006Prog': 64,
+    '1400Prog': 200
 }
 NUM_BYTES[None] = max(NUM_BYTES.values())
 
+# Wordsize in bits:
+WORDSIZE = {
+    "2801Prog": 16,
+    "2006Prog": 16,
+    "1400Prog": 14
+}
+
 # This dictionary is the character that each nibble is set to when the chip is
 # "erased":
-ERASE_CHAR = {
-    '2801Prog': '0',
-    '2006Prog': '0'
+ERASE_STR = {
+    '2801Prog': '0' * (NUM_BYTES['2801Prog'] * 2),
+    '2006Prog': '0' * (NUM_BYTES['2006Prog'] * 2),
+    '1400Prog': '3FFF' * (NUM_BYTES['1400Prog'] // 2)
 }
 
 # These are the supporting classes and functions:
@@ -62,9 +72,10 @@ def check_boolean(result, verb='???'):
     elif result == SERIAL_TRUE:
         return True
     else:
-        raise InvalidResponseError('attempt to ' \
-                                   + verb +
-                                   ' returned invalid value: 0x' + result.encode('hex'))
+        raise InvalidResponseError(
+            'attempt to ' + verb +
+            ' returned invalid value: 0x' + result.encode('hex')
+        )
 
 def ask(port, command):
     """Writes command + VERB_TERMINATOR to port, then reads a line and returns
@@ -145,6 +156,8 @@ def enter_automation_mode(port):
     # check usage prompt -- if it doesn't print this, it didn't go into
     # automation mode properly, or the buffer is out of sync.
     if line not in AUTOMATION_MODE_LINES:
+        print(line)
+        print(len(line))
         raise InvalidResponseError('Never got automation handshake from unit!')
     else:
         return AUTOMATION_MODE_LINES[line]

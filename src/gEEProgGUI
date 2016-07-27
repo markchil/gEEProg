@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright 2014 Mark Chilenski
+# Copyright 2016 Mark Chilenski
 # This program is distributed under the terms of the GNU General Purpose License (GPL).
 # Refer to http://www.gnu.org/licenses/gpl.txt
 
@@ -29,22 +29,26 @@ import time
 import gEEProg
 import os.path
 import sys
+import traceback
 import warnings
 import webbrowser
+import math
 
-__version__ = '2.0'
+__version__ = '2.1'
 
 NULL_PORT_NAME = "disconnected"
-SERIAL_TIMEOUT = 2
+SERIAL_TIMEOUT = 15
+SHORT_TIMEOUT = 1
 
 TIME_FMT = '%H:%M:%S: '
 
 # Maximum/starting geometry to use:
-MAX_ROWS = 16
-MAX_COLS = 8
+MAX_ROWS = 20
+MAX_COLS = 20
 DIMENSIONS = {
     '2801Prog': (16, 4),
-    '2006Prog': (16, 8)
+    '2006Prog': (16, 8),
+    '1400Prog': (20, 20)
 }
 
 # Help text to display:
@@ -56,7 +60,13 @@ HELP_TEXT = {
     "2006Prog": "The Siemens SDA-2006 EEPROM is organized as 32 16-bit words. "
                 "This programmer uses big-endian format so when data is read "
                 "from or written to the device, the most significant byte in "
-                "each word comes first in the buffer."
+                "each word comes first in the buffer.",
+    "1400Prog": "The General Instrument ER1400 EAROM is organized as 100 14-bit "
+                "words. This programmer uses 16-bit words to store the data, so "
+                "the two most significant bits of each word are ignored. The "
+                "programmer also uses big-endian format so when data is read or "
+                "written to the device, the most significant byte in each word "
+                "comes first in the buffer."
 }
 
 # Factor to spread characters out a bit:
@@ -339,8 +349,9 @@ class PortSelector(tk.Frame):
             self.master.set_info("")
         else:
             try:
-                self.port = serial.Serial(new_port, timeout=SERIAL_TIMEOUT)
+                self.port = serial.Serial(new_port, timeout=SHORT_TIMEOUT)
                 self.type = gEEProg.enter_automation_mode(self.port)
+                self.port.timeout = SERIAL_TIMEOUT
                 self.master.hex_canvas.update_dimensions(*DIMENSIONS[self.type])
                 self.master.status_box.update_status(
                     "Successfully connected to %s." % (self.type,),
@@ -492,7 +503,7 @@ class GEEProgMainWindow(tk.Tk):
         # Create textbox:
         self.info_box = tk.Text(
             self,
-            width=1,
+            width=20,
             height=1,
             wrap=tk.WORD,
             font=tkFont.nametofont("TkDefaultFont"),
@@ -575,7 +586,7 @@ class GEEProgMainWindow(tk.Tk):
         
         description = tk.Label(
             top,
-            text=u"\u00A9 2014 Mark Chilenski\n"
+            text=u"\u00A9 2016 Mark Chilenski\n"
                   "GUI to control D'Asaro Designs EEPROM programmers.",
             justify=tk.LEFT
         )
@@ -687,6 +698,7 @@ class GEEProgMainWindow(tk.Tk):
             self.hex_canvas.render_data()
             self.status_box.update_status("Read complete.", "green")
         except:
+            traceback.print_exc()
             self.status_box.update_status("Read failed!", "red")
             self.bell()
     
@@ -694,6 +706,18 @@ class GEEProgMainWindow(tk.Tk):
         """Program the chip.
         """
         try:
+            # First check the buffer against the wordsize and warn if data are
+            # being truncated:
+            overlimit = self.check_for_truncation()
+            if overlimit:
+                good_status = (
+                    "Program complete. Warning: >%d bits in buffer." %
+                    (gEEProg.WORDSIZE[self.port_selector.type],),
+                    "yellow"
+                )
+            else:
+                good_status = ("Program complete.", "green")
+            
             success = gEEProg.program_chip(
                 self.port_selector.port,
                 "".join(self.data[:2 * gEEProg.NUM_BYTES[self.port_selector.type]])
@@ -705,22 +729,31 @@ class GEEProgMainWindow(tk.Tk):
                 )
                 self.bell()
             else:
-                self.status_box.update_status("Program complete.", "green")
+                self.status_box.update_status(*good_status)
         except NotImplementedError:
             self.status_box.update_status("Could not perform program!", "red")
             self.bell()
     
     def verify(self):
         try:
+            # First check the buffer against the wordsize and warn if data are
+            # being truncated:
+            overlimit = self.check_for_truncation()
+            if overlimit:
+                good_status = (
+                    "Passed. Warning: >%d bits in buffer." %
+                    (gEEProg.WORDSIZE[self.port_selector.type],),
+                    "yellow"
+                )
+            else:
+                good_status = ("Chip passed verification.", "green")
+            
             success = gEEProg.verify_chip(
                 self.port_selector.port,
                 "".join(self.data[:2 * gEEProg.NUM_BYTES[self.port_selector.type]])
             )
             if success:
-                self.status_box.update_status(
-                    "Chip passed verification.",
-                    "green"
-                )
+                self.status_box.update_status(*good_status)
             else:
                 self.status_box.update_status(
                     "Chip failed verification!",
@@ -728,6 +761,7 @@ class GEEProgMainWindow(tk.Tk):
                 )
                 self.bell()
         except:
+            traceback.print_exc()
             self.status_box.update_status("Could not perform verify!", "red")
             self.bell()
     
@@ -737,8 +771,7 @@ class GEEProgMainWindow(tk.Tk):
                 self.port_selector.port,
                 gEEProg.NUM_BYTES[self.port_selector.type]
             )
-            if (result != gEEProg.ERASE_CHAR[self.port_selector.type] *
-                    2 * gEEProg.NUM_BYTES[self.port_selector.type]):
+            if (result != gEEProg.ERASE_STR[self.port_selector.type]):
                 self.status_box.update_status(
                     "Chip did not erase properly!",
                     "red"
@@ -747,8 +780,27 @@ class GEEProgMainWindow(tk.Tk):
             else:
                 self.status_box.update_status("Chip has been erased.", "green")
         except:
+            traceback.print_exc()
             self.status_box.update_status("Could not perform erase!", "red")
             self.bell()
+    
+    def check_for_truncation(self):
+        """Check to see if the data will be truncated.
+        
+        This is necessary for word sizes which are not evenly divisible by 8.
+        """
+        if gEEProg.WORDSIZE[self.port_selector.type] % 8 != 0:
+            # The number of bytes for each word:
+            bytes_per_word = gEEProg.WORDSIZE[self.port_selector.type] // 8 + 1
+            # Assemble the words, check each for out-of-bounds:
+            for i in range(0, gEEProg.NUM_BYTES[self.port_selector.type] // bytes_per_word):
+                word = ''
+                for j in range(0, 2 * bytes_per_word):
+                    word += self.data[i * 2 * bytes_per_word + j]
+                if int(word, 16) >= 2**gEEProg.WORDSIZE[self.port_selector.type]:
+                    return True
+        
+        return False
 
 if __name__ == "__main__":
     root = GEEProgMainWindow()
