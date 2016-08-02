@@ -669,8 +669,7 @@ class GEEProgMainWindow(tk.Tk):
         """Save the data to a file.
         """
         filepath = tkFileDialog.asksaveasfilename(
-            # filetypes=[('ASCII', '.txt'), ('Binary', '.*')],
-            # defaultextension='.txt'
+            filetypes=[('Text file', '.txt'), ('Binary file', '.*')]
         )
         if filepath:
             self.save_file(filepath)
