@@ -342,6 +342,7 @@ class PortSelector(tk.Frame):
             pass
         if new_port == NULL_PORT_NAME:
             self.port = None
+            self.type = None
             self.master.status_box.update_status(
                 'No serial port selected.',
                 'yellow'
@@ -361,6 +362,7 @@ class PortSelector(tk.Frame):
             except:
                 self.current_port.set(NULL_PORT_NAME)
                 self.port = None
+                self.type = None
                 self.master.status_box.update_status(
                     "Could not connect to selected port!",
                     "red"
@@ -646,7 +648,7 @@ class GEEProgMainWindow(tk.Tk):
         """
         base, ext = os.path.splitext(filepath)
         read_str = ''
-        if ext.lower() == '.txt':
+        if ext.lower() == '.txt' or ext.lower() == '.hex':
             with open(filepath, 'r') as f:
                 data = f.read()
             for char in data:
@@ -666,7 +668,10 @@ class GEEProgMainWindow(tk.Tk):
     def save(self, event=None):
         """Save the data to a file.
         """
-        filepath = tkFileDialog.asksaveasfilename()
+        filepath = tkFileDialog.asksaveasfilename(
+            # filetypes=[('ASCII', '.txt'), ('Binary', '.*')],
+            # defaultextension='.txt'
+        )
         if filepath:
             self.save_file(filepath)
         else:
@@ -676,13 +681,14 @@ class GEEProgMainWindow(tk.Tk):
         """Save the data to a file.
         """
         base, ext = os.path.splitext(filepath)
-        if ext == '.txt':
+        num_chars = 2 * gEEProg.NUM_BYTES[self.port_selector.type]
+        if ext.lower() == '.txt' or ext.lower() == '.hex':
             with open(filepath, 'w') as outfile:
-                outfile.write("".join(self.data))
+                outfile.write("".join(self.data[:num_chars]))
         else:
             with open(filepath, 'wb') as outfile:
-                for a, b in zip(self.data[::2], self.data[1::2]):
-                    outfile.write(chr(int(a+b, 16)))
+                for a, b in zip(self.data[:num_chars:2], self.data[1:num_chars:2]):
+                    outfile.write(chr(int(a + b, 16)))
         self.status_box.update_status("Wrote file.", "green")
     
     def read(self):
