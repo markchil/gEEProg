@@ -741,7 +741,7 @@ class GEEProgMainWindow(tk.Tk):
             overlimit = self.check_for_truncation()
             if overlimit:
                 good_status = (
-                    "Passed. Warning: >%d bits in buffer." %
+                    "Chip passed. Warning: >%d bits in buffer." %
                     (gEEProg.WORDSIZE[self.port_selector.type],),
                     "yellow"
                 )
