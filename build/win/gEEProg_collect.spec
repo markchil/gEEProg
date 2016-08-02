@@ -19,4 +19,4 @@ exe = EXE(pyz,
 
 # for use with pyInstaller 2.0
 # run with:
-# python ..\pyinstaller-2.0\utils\Build.py gEEProg_collect.spec
+# python .\pyinstaller-2.1\utils\Build.py gEEProg_collect.spec
